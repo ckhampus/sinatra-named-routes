@@ -77,14 +77,14 @@ describe Sinatra::NamedRoutes do
 
     it 'ignores params if path is not a symbol' do
       helper_route do
-        url '/route_one', false, name: 'cristian'
+        url '/route_one', false, :name => 'cristian'
       end.should be == '/route_one'
     end
 
     describe :named do
       it 'returns the correct path if passed a hash with symbols as keys' do 
         helper_route do
-          url :path_multi_named, false, name: 'cristian', format: 'json'  
+          url :path_multi_named, false, :name => 'cristian', :format => 'json'  
         end.should be == '/hello/cristian.json'
       end
 
@@ -96,14 +96,14 @@ describe Sinatra::NamedRoutes do
 
       it 'ignores keys that are left' do
         helper_route do
-          url :path_multi_named, false, name: 'cristian', format: 'json', color: 'blue'  
+          url :path_multi_named, false, :name => 'cristian', :format => 'json', :color => 'blue'  
         end.should be == '/hello/cristian.json'
       end
 
       it 'throws an exception if required keys do not exist' do
         expect do
           helper_route do
-            url :path_multi_named, false, name: 'cristian', color: 'blue'
+            url :path_multi_named, false, :name => 'cristian', :color => 'blue'
           end
         end.to raise_exception ArgumentError
       end
