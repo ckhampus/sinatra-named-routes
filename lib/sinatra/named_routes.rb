@@ -1,4 +1,4 @@
-require 'version'
+require File.join(File.dirname(__FILE__), 'version')
 
 module Sinatra
   module NamedRoutes
