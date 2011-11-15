@@ -1,4 +1,4 @@
-require_relative 'version'
+require 'version'
 
 module Sinatra
   module NamedRoutes
@@ -30,11 +30,11 @@ module Sinatra
         named = path.scan(/(?<=:)[^\.\/]*/).map { |item| item.to_sym }
         splat = path.scan(/\*/)
 
-        params = { named: named, splat: splat }
+        params = { :named => named, :splat => splat }
       elsif path.is_a? Regexp
         regexp = path.source.scan(/\([^\)]*\)/)
 
-        params = { regexp: regexp }
+        params = { :regexp => regexp }
       end
 
       route[:params] = params
