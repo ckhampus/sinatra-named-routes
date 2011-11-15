@@ -4,6 +4,7 @@ source 'http://rubygems.org'
 gemspec
 
 group :development, :test do
+  gem 'rake'
   gem 'sinatra-contrib'
   gem 'rspec'
   gem 'guard-rspec'
