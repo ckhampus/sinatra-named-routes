@@ -7,9 +7,9 @@ Gem::Specification.new do |s|
   s.version     = Sinatra::NamedRoutes::VERSION
   s.authors     = ['Cristian Hampus']
   s.email       = ['contact@cristianhampus.se']
-  s.homepage    = 'http://cristianhampus.se'
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.homepage    = 'https://github.com/ckhampus/sinatra-named-routes'
+  s.summary     = %q{Named Routes for Sinatra}
+  s.description = %q{Allows the use of named routes in Sinatra applications.}
 
   s.rubyforge_project = 'sinatra-named-routes'
 
