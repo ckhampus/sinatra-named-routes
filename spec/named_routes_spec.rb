@@ -20,13 +20,10 @@ describe Sinatra::NamedRoutes do
       register Sinatra::NamedRoutes
 
       map(:hello, '/hello')
-
-      map(:path_named, '/hello/:name')
       map(:path_multi_named, '/hello/:name.:format')
-      map(:path_splat, '/hello/*')
       map(:path_multi_splat, '/hello/*.*')
-      map(:path_regexp, %r{/hello/([\w]+)})
       map(:path_multi_regexp, %r{/hello/([\w]+).([\w]+)})
+      map(:path_named_captures, %r{/hello/(?<person>[^/?#]+)})
 
       get('/') { 'hello' }
       get(:hello) { 'hello world' }
@@ -141,7 +138,16 @@ describe Sinatra::NamedRoutes do
           end
         end.to raise_exception ArgumentError
       end
+    end
 
+    describe :named_captures do
+      it 'returns the correct url for path with named captures' do
+        next if RUBY_VERSION < '1.9'
+
+        helper_route do
+          url :path_named_captures, false, :person => 'cristian'
+        end.should be == '/hello/cristian'
+      end
     end
 
   end

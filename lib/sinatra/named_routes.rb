@@ -32,7 +32,12 @@ module Sinatra
 
         params = { :named => named, :splat => splat }
       elsif path.is_a? Regexp
+        captures = path.names.map { |item| item.to_sym }
         regexp = path.source.scan(/\([^\)]*\)/)
+
+        unless captures.empty?
+          regexp = Hash[captures.zip(regexp)]
+        end
 
         params = { :regexp => regexp }
       end
@@ -58,6 +63,16 @@ module Sinatra
           route[:params][:named].each do |key|
             if params.has_key? key
               path = path.sub(key.inspect, params[key])
+            else
+              raise ArgumentError.new
+            end
+          end
+        elsif path.is_a? Regexp
+          path = path.source
+          
+          route[:params][:regexp].each do |key, value|
+            if params.has_key? key
+              path = path.sub(value, params[key])
             else
               raise ArgumentError.new
             end
