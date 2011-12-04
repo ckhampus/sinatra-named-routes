@@ -3,125 +3,50 @@ require File.join(File.dirname(__FILE__), 'route_parser')
 
 module Sinatra
   module NamedRoutes
-    @@routes = {}
+    module Helpers
 
-    # def uri(addr = nil, absolute = true, add_script_name = true, params = {})
-    def uri(*args)
-      path = args.shift if args.first.is_a? Symbol
-      params = args.pop if args.last.is_a? Array or args.last.is_a? Hash
+      # def uri(addr = nil, absolute = true, add_script_name = true, params = {})
+      def uri(*args)
+        path = args.shift if args.first.is_a? Symbol
+        params = args.pop if args.last.is_a? Array or args.last.is_a? Hash
 
-      if path
-        addr = get_path(path, params)
+        if path
+          addr = NamedRoutes.get_path(path, params)
 
-        super(addr, *args)
-      else
-        super(*args)
-      end
-
-    end
-
-    alias :to :uri
-    alias :url :uri
-
-    def map(name, path)
-      route = {}
-      route[:path] = path
-
-      if path.is_a? String
-        named = path.scan(/(?<=:)[^\.\/]*/).map { |item| item.to_sym }
-        splat = path.scan(/\*/)
-
-        params = { :named => named, :splat => splat }
-      elsif path.is_a? Regexp
-        captures = path.names.map { |item| item.to_sym }
-        regexp = path.source.scan(/\([^\)]*\)/)
-
-        unless captures.empty?
-          regexp = Hash[captures.zip(regexp)]
+          super(addr, *args)
+        else
+          super(*args)
         end
 
-        params = { :regexp => regexp }
       end
+      alias :to :uri
+      alias :url :uri
+    end
 
-      route[:params] = params
-
-      @@routes[name] = route
+    def map(name, path)
+      NamedRoutes.routes[name] = Route.new path
     end
 
     private
 
-    def get_path(name, params = {})
-      route = @@routes[name]
-
-      path = route[:path]
-
-      if params.is_a? Hash
-        
-        # Turn string keys into symbols
-        params = params.inject({}){|memo,(k,v)| memo[k.to_sym] = v; memo}
-
-        if path.is_a? String
-          route[:params][:named].each do |key|
-            if params.has_key? key
-              path = path.sub(key.inspect, params[key])
-            else
-              raise ArgumentError.new
-            end
-          end
-        elsif path.is_a? Regexp
-          path = path.source
-
-          
-          route[:params][:regexp].each do |key, value|
-            if params.has_key? key
-              path = path.sub(value, params[key])
-            else
-              raise ArgumentError.new
-            end
-          end
-
-          # Check if the generated route matches the regexp.
-          p route[:path].match(path)
-          if route[:path].match(path).nil?
-            raise ArgumentError.new
-          end
-
-        end
-      elsif params.is_a? Array
-        if path.is_a? String
-          if route[:params][:splat].length != params.length
-            raise ArgumentError.new
-          end
-
-          params.each do |value|
-            path = path.sub('*', value)
-          end
-        elsif path.is_a? Regexp
-          if route[:params][:regexp].length != params.length
-            raise ArgumentError.new
-          end
-
-          path = path.source
-
-          params.each_index do |index|
-            path = path.sub(route[:params][:regexp][index], params[index])
-          end
-        end
-      end
-
-      path
-    end
-
     def route(verb, path, options={}, &block)
       if path.is_a?(Symbol)
-        path = @@routes[path][:path]
+        path = NamedRoutes.routes[path].source
       end
 
       super(verb, path, options, &block)
     end
 
+    def self.get_path(name, params = {})
+      NamedRoutes.routes[name].build params
+    end
+
+    def self.routes
+      @@routes ||= {}
+    end
+
     def self.registered(app)
-      app.helpers NamedRoutes
+      app.helpers NamedRoutes::Helpers
     end
   end
 end

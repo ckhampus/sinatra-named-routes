@@ -1,28 +1,23 @@
 class Route
+  attr_reader :source
+
   def initialize(route)
+    route = route.source if route.is_a? Regexp
+
+    @source = route
     @input = StringScanner.new(route)
     @output = []
 
     parse
   end
 
-  def parse
-    while token = parse_slash || parse_path || parse_named_param || parse_dot || parse_splat
-      @output << token
-      is_optional
-    end
-
-    @output
-  end
-
-  def build(params)
+  def build(params = {})
     path = []
+    params = {} if params.nil?
 
     @output.each_index do |index|
       item = @output[index]
       next_item = @output.fetch(index + 1, nil)
-
-      is_last = @output.size == index + 1
 
       case item[:token]
       when :slash
@@ -31,6 +26,14 @@ class Route
       when :dot
         @trailing_dot = item[:optional]
         path << '.'
+      when :splat
+        if params.is_a? Hash
+          if params[:splat].empty? then raise ArgumentError.new end
+          path << params[:splat].shift
+        else
+          if params.empty? then raise ArgumentError.new end
+          path << params.shift
+        end
       when :path
         path << item[:value]
       when :named_param
@@ -40,6 +43,26 @@ class Route
           path << params.delete(item_key)
         else
           unless item[:optional] then raise ArgumentError.new end
+        end
+      when :regexp
+        name = /#{item[:value]}/.names
+
+        if name.any?
+          name = name.first.to_sym
+
+          if params.has_key? name
+            path << params.delete(name)
+          else
+            unless item[:optional] then raise ArgumentError.new end
+          end
+        else
+          if params.is_a? Hash
+            if params[:captures].empty? and !item[:optional] then raise ArgumentError.new end
+            path << params[:captures].shift
+          else
+            if params.empty? then raise ArgumentError.new end
+            path << params.shift
+          end
         end
       end
     end
@@ -59,8 +82,16 @@ class Route
 
   private
 
-  def is_optional
+  def is_optional?
     @output.last[:optional] = @input.scan(/\?/) ? true : false
+  end
+
+  def parse
+    while token = parse_slash || parse_path || parse_named_param || 
+                  parse_dot || parse_splat || parse_regexp
+      @output << token
+      is_optional?
+    end
   end
 
   def parse_slash
@@ -115,10 +146,10 @@ class Route
     end
   end
 
-  def parse_capture_group
+  def parse_regexp
     if @input.scan(/\([^\)]*\)/)
       {
-        :token => :named_param,
+        :token => :regexp,
         :value => @input.matched
       }
     else
