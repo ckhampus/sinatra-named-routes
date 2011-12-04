@@ -1,10 +1,11 @@
 require File.join(File.dirname(__FILE__), 'version')
+require File.join(File.dirname(__FILE__), 'route_parser')
 
 module Sinatra
   module NamedRoutes
     @@routes = {}
 
-    #def uri(addr = nil, absolute = true, add_script_name = true, params = {})
+    # def uri(addr = nil, absolute = true, add_script_name = true, params = {})
     def uri(*args)
       path = args.shift if args.first.is_a? Symbol
       params = args.pop if args.last.is_a? Array or args.last.is_a? Hash
@@ -69,6 +70,7 @@ module Sinatra
           end
         elsif path.is_a? Regexp
           path = path.source
+
           
           route[:params][:regexp].each do |key, value|
             if params.has_key? key
@@ -77,6 +79,13 @@ module Sinatra
               raise ArgumentError.new
             end
           end
+
+          # Check if the generated route matches the regexp.
+          p route[:path].match(path)
+          if route[:path].match(path).nil?
+            raise ArgumentError.new
+          end
+
         end
       elsif params.is_a? Array
         if path.is_a? String

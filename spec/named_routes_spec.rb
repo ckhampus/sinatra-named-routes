@@ -153,13 +153,13 @@ describe Sinatra::NamedRoutes do
         next if RUBY_VERSION < '1.9'
 
         helper_route do
-          url :path_optional_named_captures, false, :format => 'html'
+          url :path_optional_named_captures, false, :format => '.html'
         end
 
         body.should be == '/page.html'
 
         helper_route do
-          url :path_optional_named_captures, false, :format => 'xml'
+          url :path_optional_named_captures, false, :format => '.xml'
         end
 
         body.should be == '/page.xml'
