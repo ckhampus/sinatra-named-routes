@@ -11,6 +11,11 @@ class Route
     parse
   end
 
+  # Public: Build URL with parameters.
+  #
+  # params - The hash or array of parameters to pass to URL.
+  #
+  # Returns the URL as a String.
   def build(params = {})
     path = []
     params = {} if params.nil?
@@ -28,10 +33,10 @@ class Route
         path << '.'
       when :splat
         if params.is_a? Hash
-          if params[:splat].empty? then raise ArgumentError.new end
+          raise ArgumentError, 'No parameters passed.' if params[:splat].empty?
           path << params[:splat].shift
         else
-          if params.empty? then raise ArgumentError.new end
+          raise ArgumentError, 'No enough parameters passed.' if params.empty?
           path << params.shift
         end
       when :path
@@ -42,7 +47,7 @@ class Route
         if params.has_key? item_key
           path << params.delete(item_key)
         else
-          unless item[:optional] then raise ArgumentError.new end
+          raise ArgumentError, "No value passed for '#{item_key.to_s}'" unless item[:optional]
         end
       when :regexp
         name = /#{item[:value]}/.names
@@ -53,14 +58,14 @@ class Route
           if params.has_key? name
             path << params.delete(name)
           else
-            unless item[:optional] then raise ArgumentError.new end
+            raise ArgumentError, "No value passed for '#{name.to_s}'" unless item[:optional]
           end
         else
           if params.is_a? Hash
-            if params[:captures].empty? and !item[:optional] then raise ArgumentError.new end
+            raise ArgumentError, 'No enough parameters passed.' if params[:captures].empty? and !item[:optional]
             path << params[:captures].shift
           else
-            if params.empty? then raise ArgumentError.new end
+            raise ArgumentError, 'No enough parameters passed.' if params.empty?
             path << params.shift
           end
         end
