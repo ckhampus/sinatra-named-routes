@@ -38,6 +38,7 @@ module Sinatra
     end
 
     def self.get_path(name, params = {})
+      raise ArgumentError, "No route with the name #{name} exists." if NamedRoutes.routes.nil?
       NamedRoutes.routes[name].build params
     end
 
