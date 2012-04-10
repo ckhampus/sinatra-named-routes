@@ -5,7 +5,9 @@ module Sinatra
   module NamedRoutes
     module Helpers
 
-      # def uri(addr = nil, absolute = true, add_script_name = true, params = {})
+      # Generates the absolute URI for a given path in the app.
+      # Takes Rack routers and reverse proxies into account.
+      # Extended support passing in named route and parameters.
       def uri(*args)
         path = args.shift if args.first.is_a? Symbol
         params = args.pop if args.last.is_a? Array or args.last.is_a? Hash
@@ -19,13 +21,17 @@ module Sinatra
         end
 
       end
+
       alias :to :uri
       alias :url :uri
     end
 
+    # Maps a path to name.
     def map(name, path)
       NamedRoutes.routes[name] = Route.new path
     end
+    
+    alias :bind :map
 
     private
 
