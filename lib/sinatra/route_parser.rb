@@ -128,7 +128,7 @@ module Sinatra
       end
 
       def parse_path
-        if @input.scan(/\w+/)
+        if @input.scan(/[\w\-]+/)
           {
             :token => :path,
             :value => @input.matched
