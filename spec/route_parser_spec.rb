@@ -20,6 +20,12 @@ describe Sinatra::NamedRoutes::Route do
     url.should eql '/hello/cristian.json'
   end
 
+  it 'supports paths with hypens' do
+    route = Sinatra::NamedRoutes::Route.new('/mostly-uncontrollable-hypens')
+    url = route.build
+    url.should eql '/mostly-uncontrollable-hypens'
+  end
+
   it 'throws exception if required splats are missing' do
     expect do
     route = Sinatra::NamedRoutes::Route.new('/hello/*.*')
